@@ -1,0 +1,155 @@
+---
+title: Something related to Bayesian data analysis
+#author:
+#  - name: Alice Anonymous
+#    email: alice@example.com
+#    affiliation: Some Institute of Technology
+#    footnote: 1
+#  - name: Bob Security
+#    email: bob@example.com
+#    affiliation: Another University
+#  - name: Cat Memes
+#    email: cat@example.com
+#    affiliation: Another University
+#    footnote: 2
+#  - name: Derek Zoolander
+#    email: derek@example.com
+#    affiliation: Some Institute of Technology
+#    footnote: 2
+#address:
+#  - code: Some Institute of Technology
+#    address: Department, Street, City, State, Zip
+#  - code: Another University
+#    address: Department, Street, City, State, Zip
+#footnote:
+#  - code: 1
+#    text: "Corresponding Author"
+#  - code: 2
+#    text: "Equal contribution"
+#abstract: |
+#  This is the abstract.
+#
+#  It consists of two paragraphs.
+
+#journal: "An awesome journal"
+#date: "`r Sys.Date()`"
+bibliography: SBSN.bib
+#linenumbers: true
+numbersections: true
+csl: elsevier-harvard.csl
+output: 
+  bookdown::pdf_book:
+    base_format: rticles::elsevier_article
+---
+```{r, include=FALSE}
+library(HDInterval)
+
+data <- read.csv(here::here("final_cutoff", "cp_VEleni_final.csv"))
+
+burnin = 1000000
+iter = 1000000
+thin = 10
+
+cp_95 <- hdi(data$cp, credMass = 0.95)
+cp_89 <- hdi(data$cp, credMass = 0.89)
+```
+
+
+# Methods
+The cut-off of biomarker AI and its predictive values were determined using a Bayesian model described by @Vradi2018. 
+The model can be expressed as:  
+\[Y|X \sim Bernoulli(p)\]
+\[
+p(x) = P(Y = 1|X = x) = 
+\left\{
+    \begin{array}{lr}
+          p_1 = P(Y = 1|X \le cp) = 1 - NPV, & \text{if } x \le cp\\
+          p_2 = P(Y = 1|X > cp) = PPV, & \text{if } x > cp
+    \end{array}
+\right.
+\]  
+The binary response variable _Y_ took the value 1 when a patient had NPSLE and 0 otherwise. 
+_X_ was the continuous measurement of the biomarker AI. 
+In this study, the positive predictive value (PPV) of the cutoff _cp_ was expected to $\ge$ 70%, while the negative predictive value (NPV) was $\ge$ 50%. 
+Thus, prior distributions of 1-NPV and PPV were chosen as follows: 
+\[p_1 \sim Uniform(0, 0.5)\]
+\[p_2 \sim Uniform(0.7, 1)\]
+The Bayesian analysis was carried out in SAS Studio [@SAS2015] through PROC MCMC, which uses Markov chain Monte Carlo (MCMC) algorithm. 
+The model was run for a total of `r (burnin + iter)` iterations. The first `r burnin` iterations were discarded as burn-in. The remaining were kept 1 in `r thin` samples (thinning) to reduce autocorrelation. 
+The MCMC representativeness and accuracy were assessed by trace plot, sample autocorrelation, effective sample size (ESS), and Monte Carlo standard error (MCSE).  
+
+# Results
+- Diagnostic results  
+    - Trace plot of all parameters mixed well => showed no potential problem with convergence.  
+    - Sample autocorrelation of all parameters dropped quickly to zero with increasing lag.  
+    - ESS of all parameters were > 17500. (recommended: > 10000)  
+    - MCSE of all parameters were < 0.0059.  
+=> Conclusion: MCMC chains were stable and accurate.  
+
+- Posterior distribution summary  
+  - report: the mean and 95% highest density interval (HDI) of cp, p1, p2. (in Table **Posterior Summaries and Intervals** of the file **Results_cutoff_VEleni_final.pdf**)  
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(kableExtra)
+
+data <- read.csv(here::here("final_cutoff", "cp_VEleni_final.csv"))
+
+data %>% 
+          select(cp, p1, p2) %>%
+          gather(para_name) %>%
+          group_by(para_name) %>%
+          summarise(median = median(value),
+                    mean = mean(value)) %>% 
+	kable("simple",
+	      booktabs = T,
+	      col.names = c("Parameter", 
+	      	    	"Median",
+	      	    	"Mean"), 
+	      align = "ll",
+	      caption = "this table is used to compare mean and median value when necessary")
+
+```
+
+
+  - 95% HDI of cutoff value was in range `r cp_95[1]`-`r cp_95[2]` but 89% HDI of cutoff was in this small range `r cp_89[1]`-`r cp_89[2]`.  
+
+# Caption of Figure:  
+Fig1. Summary of posterior distribution of the cutoff and its predictive value (1-NPV and PPV). 
+The vertical red dotted lines denote the median of the distribution.  
+
+# Supplementary
+## Diagnostic results  
+## SAS MCMC code  
+
+```
+PROC import datafile="/path/to/data.csv"
+DBMS=csv out=Data replace;
+RUN; 
+
+
+PROC MCMC 
+	data=Data outpost=Dataoutput 
+		nbi=1000000 
+		nmc=1000000
+		thin=10
+		seed=1
+		diag=all
+		monitor=(p1 p2 cp I w); 
+PARMS cp1 cp2 p1 p2 w I; 
+prior cp1 ~ uniform(1,10); 
+prior cp2 ~ normal(5,sd=1); 
+hyperprior I ~ beta(1,1); 
+prior w ~ binary(I); 
+cp = w*cp1 + (1-w)*cp2; 
+prior p2 ~ uniform(0.7, 1);
+prior p1 ~ uniform(0, 0.5);
+p = (AI<=cp)*p1 + (AI>cp)*p2; 
+model Y ~ binary(p);
+RUN;
+```
+
+References {#references .unnumbered}
+==========
+
+

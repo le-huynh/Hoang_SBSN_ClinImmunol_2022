@@ -1,0 +1,108 @@
+---
+title: "Plot Cutoff-p1-p2 posterior distribution"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Required package
+```{r message=FALSE, warning=FALSE}
+library(here)
+library(ggplot2)
+library(cowplot)
+```
+
+```{r}
+cpplot = function(data, 
+                  para,
+                  xtitle,
+                  ytitle = "Density",
+                  histbin = 0.2,
+                  densize = 0.9,
+                  dencolor = "dimgray",
+                  ...)
+{fig = ggplot(data, aes(x=para)) + 
+          # histogram
+          geom_histogram(aes(y = ..density..),
+                         binwidth = histbin,
+                         color = "black",
+                         fill = "white") +
+          # add mean line
+          geom_vline(aes(xintercept=median(para)), 
+                     color = "red",
+                     size = 1) +
+          # add density line
+          geom_density(size = densize,
+                       color = dencolor) + 
+          labs(x = xtitle,
+               y = ytitle) + 
+          theme_bw() +
+          theme(panel.border = element_blank(), 
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(), 
+                axis.line = element_line(colour = "black"), 
+                axis.text = element_text(colour = "black"), 
+            ...)
+fig
+}
+```
+## p1 ~ uniform(0, p2)
+### Data
+```{r}
+datp2 = read.csv(here("Data", "cp", "cp_VEleni_p2.csv"))
+
+```
+
+### Plot
+```{r warning=FALSE, message=FALSE} 
+cp_p2= cpplot(datp2, datp2$cp,
+              xtitle = "Cutoff")
+cp_p2
+
+p1_p2 = cpplot(datp2, datp2$p1,
+               histbin = 0.01,
+               xtitle = "1 - NPV")
+p1_p2
+
+p2_p2 = cpplot(datp2, datp2$p2,
+               histbin = 0.005,
+               xtitle = "PPV")
+p2_p2
+
+cowplot::plot_grid(cp_p2, p1_p2, p2_p2,
+                   ncol = 1)
+```
+
+## p1 ~ uniform(0, 0.5)
+### Data
+```{r}
+dat05 = read.csv(here("Data", "cp", "cp_VEleni_05.csv"))
+
+```
+
+### Plot
+```{r warning=FALSE, message=FALSE}
+cp_05= cpplot(dat05, dat05$cp,
+              xtitle = "Cutoff")
+cp_05
+
+p1_05 = cpplot(dat05, dat05$p1,
+               histbin = 0.005,
+               xtitle = "1 - NPV")
+p1_05
+
+p2_05 = cpplot(dat05, dat05$p2,
+               histbin = 0.005,
+               xtitle = "PPV")
+p2_05
+
+cowplot::plot_grid(cp_05, p1_05, p2_05,
+                   ncol = 1)
+```
+
+
+## References
+1. [Bayesian Biopharmaceutical Applications using SAS](https://higherlogicdownload.s3.amazonaws.com/AMSTAT/fa4dd52c-8429-41d0-abdf-0011047bfa19/UploadedImages/Webinars/2017/2017-04_ChenLiu.pdf)  
+
+2. [SAS MCMC manual](https://support.sas.com/documentation/onlinedoc/stat/131/mcmc.pdf)  
+

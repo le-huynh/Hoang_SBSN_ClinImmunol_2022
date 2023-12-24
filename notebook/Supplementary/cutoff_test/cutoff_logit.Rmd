@@ -1,0 +1,119 @@
+---
+title: "Cutoff value - logistic regression"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+Required package
+```{r}
+library(here)
+library(dplyr)
+library(brms)
+library(ggplot2)
+library(CalvinBayes)
+library(coda)
+```
+
+## Data
+```{r}
+dat = read.csv(here("Data", "SBSN.csv"))
+dat1 = dat %>% 
+          select(AI = AI0.005, disease) %>%
+          filter(disease == "NPSLE" | disease == "SLE") %>%
+          mutate(Y = if_else(disease == "NPSLE", 1, 0),
+                 zAI = (AI - mean(AI)) / sd(AI))
+
+# remove observation 4 to test outlier
+dat2 = dat1 %>% slice(-4)
+
+# data set includes IL13, IL1a, IL4, TGFa, TNFb
+dat3 = dat %>% 
+          select(AI = AI0.005, disease, IL13, IL1a, IL4, TGFa, TNFb) %>%
+          filter(disease == "NPSLE" | disease == "SLE") %>%
+          mutate(Y = if_else(disease == "NPSLE", 1, 0),
+                 zAI = (AI - mean(AI)) / sd(AI),
+                 zIL13 = (IL13 - mean(IL13)) / sd(IL13),
+                 zIL1a = (IL1a - mean(IL1a)) / sd(IL1a),
+                 zIL4 = (IL4 - mean(IL4)) / sd(IL4),
+                 zTGFa = (TGFa - mean(TGFa)) / sd(TGFa),
+                 zTNFb = (TNFb - mean(TNFb)) / sd(TNFb)
+          )
+
+
+```
+
+## Logistic regression
+```{r}
+mod = brm(formula = Y ~ AI,
+          data = dat1,
+          iter = 30000,
+          warmup = 15000,
+          family = bernoulli(link = logit),
+          cores = 4,
+          file = "cutoff_logit")
+
+```
+
+Reload `mod` object without re-fitting the model.  
+Choose file `cutoff_logit.rds`  
+```{r}
+mod = readRDS(file.choose())
+```
+
+## Examine chains
+```{r}
+mod_stan = stanfit(mod)
+mcmc_combo(as.mcmc.list(mod_stan)) # traceplot + density plot --> all
+
+```
+
+## Model interpretation
+```{r}
+summary(mod)
+```
+
+## Plot conditional effects 
+```{r}
+mod_fig = brms::conditional_effects(mod, prob = 0.8)
+          
+fig = plot(mod_fig, points = TRUE, plot = FALSE)[[1]] +
+          labs(x = "AI",
+               y = "Responder") +
+          scale_x_continuous(breaks = c(1, 3, 5, 7, 9, 11)) +
+          geom_hline(yintercept = 0.5,
+                     linetype = "dashed") +
+          geom_vline(xintercept = 1.9, color = "red") + 
+          geom_vline(xintercept = 3.45, color = "red")
+fig
+```
+
+## Other tests
+### NPSLE ~ AI + biomarkers <-- logistic regression
+```{r}
+bio1 = Y ~ zIL13 + zIL1a + zIL4 + zTGFa + zTNFb
+bio2 = Y ~ zAI + zIL13 + zIL1a + zIL4 + zTGFa + zTNFb
+
+mod1 = brm(formula = bio1,
+          data = dat3,
+          iter = 30000,
+          warmup = 15000,
+          family = bernoulli(link = logit),
+          cores = 4)
+
+mod2 = update(mod1, formula. = bio2, dat3)
+
+```
+
+### AI ~ biomarkers <-- linear regression
+```{r}
+AIbio = brm(formula = zAI ~ zIL13 + zIL1a + zIL4 + zTGFa + zTNFb,
+            family = gaussian(),
+            iter = 30000,
+            warmup = 15000,
+            data = dat3,
+            cores = 4
+            )
+
+```
+

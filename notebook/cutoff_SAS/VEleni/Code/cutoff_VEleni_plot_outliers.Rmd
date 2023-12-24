@@ -1,0 +1,144 @@
+---
+title: "Cutoff - VEleni - without outliers"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Required packages
+```{r}
+library(here)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+```
+
+## Import data
+```{r}
+dat = read.csv(here("Data", "cp", "cutoff_data.csv"))
+```
+
+## Possible outliers
+outlier: an observation that has a relatively large or small value compared to the majority of observations.  
+
+Determine possible outliers by `Cleverland dotplot`
+```{r}
+# Cleverland dotplot
+dotchart(dat$AI, xlab = "AI")
+
+# Determine possible outliers
+which(dat$AI > 10)
+```
+
+Possible outlier: observation 4.    
+
+Remove observation 4, then save new data set as `cutoff_outlier.csv`.  
+```{r}
+dat %>% slice(-4) %>% 
+          write.csv(file = "Data/cp/cutoff_outlier.csv", 
+                    row.names = FALSE)
+```
+
+## Running MCMC in SAS Studio
+- Step 1: Upload data set `cutoff_outlier.csv`  
+- Step 2: Create SAS program `cutoff_VEleni_outlier.sas`  
+- Step 3: Run `cutoff_VEleni_outlier.sas`  
+- Step 4: Check Errors, Warnings, Notes in `LOG`   
+- Step 5: Check convergence of MCMC chains  
+- Step 6: Save results as PDF: 
+          RESULTS -> Open in a new browser tab -> (right-click) Save as PDF...  
+- Step 7: Save SAS data output: 
+          Libraries -> My Libraries -> WORK -> (right-click) Export  
+- Step 8: Plot cp, p1, p2 in R by `ggplot2`
+
+## Plot Cutoff-p1-p2 posterior distribution
+
+```{r}
+cpplot = function(data, 
+                  para,
+                  xtitle,
+                  ytitle = "Density",
+                  histbin = 0.2,
+                  densize = 0.9,
+                  dencolor = "dimgray",
+                  ...)
+{fig = ggplot(data, aes(x=para)) + 
+          # histogram
+          geom_histogram(aes(y = ..density..),
+                         binwidth = histbin,
+                         color = "black",
+                         fill = "white") +
+          # add mean line
+          geom_vline(aes(xintercept=median(para)), 
+                     color = "red",
+                     size = 1) +
+          # add density line
+          geom_density(size = densize,
+                       color = dencolor) + 
+          labs(x = xtitle,
+               y = ytitle) + 
+          theme_bw() +
+          theme(panel.border = element_blank(), 
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(), 
+                axis.line = element_line(colour = "black"), 
+                axis.text = element_text(colour = "black"), 
+            ...)
+fig
+}
+```
+
+## p1 ~ uniform(0, p2)
+### Data
+```{r}
+datp2 = read.csv(here("Data", "cp", "cp_VEleni_p2_outlier.csv"))
+
+```
+
+### Plot
+```{r warning=FALSE, message=FALSE} 
+cp_p2= cpplot(datp2, datp2$cp,
+              xtitle = "Cutoff")
+cp_p2
+
+p1_p2 = cpplot(datp2, datp2$p1,
+               histbin = 0.01,
+               xtitle = "1 - NPV")
+p1_p2
+
+p2_p2 = cpplot(datp2, datp2$p2,
+               histbin = 0.005,
+               xtitle = "PPV")
+p2_p2
+
+cowplot::plot_grid(cp_p2, p1_p2, p2_p2,
+                   ncol = 1)
+```
+
+## p1 ~ uniform(0, 0.5)
+### Data
+```{r}
+dat05 = read.csv(here("Data", "cp", "cp_VEleni_05_outlier.csv"))
+
+```
+
+### Plot
+```{r warning=FALSE, message=FALSE}
+cp_05= cpplot(dat05, dat05$cp,
+              xtitle = "Cutoff")
+cp_05
+
+p1_05 = cpplot(dat05, dat05$p1,
+               histbin = 0.005,
+               xtitle = "1 - NPV")
+p1_05
+
+p2_05 = cpplot(dat05, dat05$p2,
+               histbin = 0.005,
+               xtitle = "PPV")
+p2_05
+
+cowplot::plot_grid(cp_05, p1_05, p2_05,
+                   ncol = 1)
+```
+

@@ -1,0 +1,248 @@
+---
+title: "Are AI values in groups equal or not?"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+Required packages
+```{r warning=FALSE, message=FALSE}
+library(here)
+library(dplyr)
+library(BEST)
+```
+
+# Data
+```{r}
+dat = read.csv(here("Data", "SBSN.csv"))
+dat1 = dat %>% select(AI = AI0.005, disease)
+
+NPSLE = dat1 %>% filter(disease == "NPSLE")
+SLE   = dat1 %>% filter(disease == "SLE")
+VM    = dat1 %>% filter(disease == "VM")
+MS    = dat1 %>% filter(disease == "MS")
+HC    = dat1 %>% filter(disease == "HC")
+
+NPSLE1 = NPSLE$AI
+SLE1   = SLE$AI
+VM1    = VM$AI
+MS1    = MS$AI
+HC1    = HC$AI
+
+```
+
+# 2-group comparison
+## SLE-NPSLE
+```{r message=FALSE}
+SLE_NPSLE = BESTmcmc(NPSLE1, SLE1)
+```
+
+
+```{r}
+summary(SLE_NPSLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(SLE_NPSLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(SLE_NPSLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+## VM-NPSLE
+```{r message=FALSE}
+VM_NPSLE = BESTmcmc(NPSLE1, VM1)
+```
+
+
+```{r}
+summary(VM_NPSLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(VM_NPSLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(VM_NPSLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+## MS-NPSLE
+```{r message=FALSE}
+MS_NPSLE = BESTmcmc(NPSLE1, MS1)
+```
+
+
+```{r}
+summary(MS_NPSLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(MS_NPSLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(MS_NPSLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+## HC-NPSLE
+```{r message=FALSE}
+HC_NPSLE = BESTmcmc(NPSLE1, HC1)
+```
+
+
+```{r}
+summary(HC_NPSLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(HC_NPSLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(HC_NPSLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+## VM-SLE
+```{r message=FALSE}
+VM_SLE = BESTmcmc(SLE1, VM1)
+```
+
+
+```{r}
+summary(VM_SLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(VM_SLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(VM_SLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+## MS-SLE
+```{r message=FALSE}
+MS_SLE = BESTmcmc(SLE1, MS1)
+```
+
+
+```{r}
+summary(MS_SLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(MS_SLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(MS_SLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+## HC-SLE
+```{r message=FALSE}
+HC_SLE = BESTmcmc(SLE1, HC1)
+```
+
+
+```{r}
+summary(HC_SLE, 
+        credMass = 0.8,
+        ROPEm = c(-0.01, 0.01))
+```
+
+
+```{r}
+plot(HC_SLE, credMass = 0.8, ROPE = c(-0.01, 0.01))
+```
+
+
+```{r}
+plotAll(HC_SLE, 
+        credMass=0.8, 
+        ROPEm=c(-0.01,0.01),
+        ROPEeff=c(-0.2,0.2), 
+        compValm=0.5)
+```
+
+
+# References
+1. John K. Kruschke and Mike Meredith (2021). BEST: Bayesian Estimation 
+    Supersedes the t-Test. R package version 0.5.3.
+    https://CRAN.R-project.org/package=BEST  
+
+2. Kruschke, J. K. 2013. Bayesian estimation supersedes the t test. 
+    Journal of Experimental Psychology: General 142(2):573-603. 
+    [doi: 10.1037/a0029146](https://doi.org/10.1037/a0029146)  
+
+3. [BEST package vignettes](https://cran.r-project.org/web/packages/BEST/vignettes/BEST.pdf)  
+
+4. [How to Compare Two Groups with Robust Bayesian Estimation in R](https://mvuorre.github.io/posts/2017-01-02-how-to-compare-two-groups-with-robust-bayesian-estimation-using-r-stan-and-brms/)  
+
+5. [Group comparisons](https://bookdown.org/marklhc/notes_bookdown/group-comparisons.html)  
+
+6. [ROPE](https://cran.r-project.org/web/packages/bayestestR/vignettes/region_of_practical_equivalence.html)  
+
+7. [Group comparisons 2](https://bookdown.org/content/3686/bayesian-approaches-to-testing-a-point-null-hypothesis.html#are-different-groups-equal-or-not)  
+
+# Note
+## 1
+```{r}
+library(bayestestR)
+?rope
+```

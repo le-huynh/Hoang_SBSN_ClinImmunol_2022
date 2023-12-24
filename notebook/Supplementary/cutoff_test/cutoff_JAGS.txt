@@ -1,0 +1,18 @@
+model {
+
+          # model
+          for (i in 1:n_obs){
+                    Y[i] ~ dbern(p)
+                    p <- (AI[i]<=cp)*p1 + (AI[i]>cp)*p2
+                    cp <- w*cp1 + (1-w)*cp2
+          }
+          
+          # priors
+          p2 ~ dunif(p1, 1)
+          p1 ~ dunif(0, 1)
+          w ~ dbern(I)
+          I ~ dbeta(1, 1)
+          cp1 ~ dunif(1, 15)
+          cp2 ~ dnorm(5, 1)
+
+}

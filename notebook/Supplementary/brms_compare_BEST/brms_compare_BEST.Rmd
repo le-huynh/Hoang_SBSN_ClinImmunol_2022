@@ -1,0 +1,64 @@
+---
+title: "Comparing two groups using `brms` package"
+output: html_notebook
+---
+
+Required packages
+```{r warning=FALSE, message=FALSE}
+library(here)
+library(dplyr)
+library(brms)
+```
+
+# Data
+```{r}
+dat = read.csv(here("Data", "SBSN.csv"))
+dat = dat %>% 
+          select(AI = AI0.005, disease) %>%
+          filter(disease == "NPSLE" | disease == "SLE")
+```
+
+# Model
+Fit the model by `STAN` via `brms` package then saving fitted model object in 
+the external `brms_compare_BEST.rds` file via the `saveRDS()` function.  
+```{r message=FALSE}
+
+mod = brm(bf(AI ~ disease, sigma ~ disease),
+          family = student,
+          data = dat,
+          chains = 4,
+          iter = 50000,
+          warmup = 25000,
+          cores = 4,
+          seed = 12345,
+          file = "brms_compare_BEST")
+
+```
+
+Reload `mod` object without re-fitting the model.  
+Choose file `brms_compare_BEST.rds`  
+```{r}
+mod = readRDS(file.choose())
+
+```
+
+# Interpretation
+```{r}
+summary(mod)
+```
+
+*Intercept: Group 0's mean a.k.a. mean of AI in NPSLE  
+*sigma_Intercept:
+*diseaseSLE: the difference between groups  
+*sigma_diseaseSLE: SD of the difference between groups  
+
+`diseaseSLE` = -0.38 => AI in SLE less than in NPSLE 0.38  
+
+# Conclusions
+Results from `BEST` package and `brms` package are nearly identical.  
+
+
+
+# Reference
+[How to Compare Two Groups with Robust Bayesian Estimation in R](https://mvuorre.github.io/posts/2017-01-02-how-to-compare-two-groups-with-robust-bayesian-estimation-using-r-stan-and-brms/)
+

@@ -1,0 +1,233 @@
+\documentclass[]{elsarticle} %review=doublespace preprint=single 5p=2 column
+%%% Begin My package additions %%%%%%%%%%%%%%%%%%%
+\usepackage[hyphens]{url}
+
+
+
+\usepackage{lineno} % add
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\usepackage{graphicx}
+%%%%%%%%%%%%%%%% end my additions to header
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \usepackage{fontspec}
+  \ifxetex
+    \usepackage{xltxtra,xunicode}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\bibliographystyle{elsarticle-harv}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={Something related to Bayesian data analysis},
+            colorlinks=false,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+
+\setcounter{secnumdepth}{5}
+% Pandoc toggle for numbering sections (defaults to be off)
+
+% Pandoc citation processing
+
+% Pandoc header
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+
+
+\begin{document}
+\begin{frontmatter}
+
+  \title{Something related to Bayesian data analysis}
+      
+  \begin{abstract}
+  
+  \end{abstract}
+  
+ \end{frontmatter}
+
+\section{Methods}\label{methods}
+
+The cut-off of biomarker AI and its predictive values were determined
+using a Bayesian model described by Vradi et al. (2018). The model can
+be expressed as:\\
+\[Y|X \sim Bernoulli(p)\] \[
+p(x) = P(Y = 1|X = x) = 
+\left\{
+    \begin{array}{lr}
+          p_1 = P(Y = 1|X \le cp) = 1 - NPV, & \text{if } x \le cp\\
+          p_2 = P(Y = 1|X > cp) = PPV, & \text{if } x > cp
+    \end{array}
+\right.
+\]\\
+The binary response variable \emph{Y} took the value 1 when a patient
+had NPSLE and 0 otherwise. \emph{X} was the continuous measurement of
+the biomarker AI. In this study, the positive predictive value (PPV) of
+the cutoff \emph{cp} was expected to \(\ge\) 70\%, while the negative
+predictive value (NPV) was \(\ge\) 50\%. Thus, prior distributions of
+1-NPV and PPV were chosen as follows: \[p_1 \sim Uniform(0, 0.5)\]
+\[p_2 \sim Uniform(0.7, 1)\] The Bayesian analysis was carried out in
+SAS Studio (SAS Institute Inc., 2015) through PROC MCMC, which uses
+Markov chain Monte Carlo (MCMC) algorithm. The model was run for a total
+of \ensuremath{2\times 10^{6}} iterations. The first \ensuremath{10^{6}}
+iterations were discarded as burn-in. The remaining were kept 1 in 10
+samples (thinning) to reduce autocorrelation. The MCMC
+representativeness and accuracy were assessed by trace plot, sample
+autocorrelation, effective sample size (ESS), and Monte Carlo standard
+error (MCSE).
+
+\section{Results}\label{results}
+
+\begin{itemize}
+\tightlist
+\item
+  Diagnostic results
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Trace plot of all parameters mixed well =\textgreater{} showed no
+    potential problem with convergence.\\
+  \item
+    Sample autocorrelation of all parameters dropped quickly to zero
+    with increasing lag.\\
+  \item
+    ESS of all parameters were \textgreater{} 17500. (recommended:
+    \textgreater{} 10000)\\
+  \item
+    MCSE of all parameters were \textless{} 0.0059.\\
+    =\textgreater{} Conclusion: MCMC chains were stable and accurate.
+  \end{itemize}
+\item
+  Posterior distribution summary\\
+\item
+  report: the mean and 95\% highest density interval (HDI) of cp, p1,
+  p2. (in Table \textbf{Posterior Summaries and Intervals} of the file
+  \textbf{Results\_cutoff\_VEleni\_final.pdf})
+\end{itemize}
+
+\begin{longtable}[]{@{}lll@{}}
+\caption{\label{tab:unnamed-chunk-2}this table is used to compare mean and
+median value when necessary}\tabularnewline
+\toprule
+Parameter & Median & Mean\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+Parameter & Median & Mean\tabularnewline
+\midrule
+\endhead
+cp & 5.1522 & 5.259981\tabularnewline
+p1 & 0.4471 & 0.439842\tabularnewline
+p2 & 0.8800 & 0.870422\tabularnewline
+\bottomrule
+\end{longtable}
+
+\begin{itemize}
+\tightlist
+\item
+  95\% HDI of cutoff value was in range 3.6796-7.1657 but 89\% HDI of
+  cutoff was in this small range 4.2134-5.9498.
+\end{itemize}
+
+\section{Caption of Figure:}\label{caption-of-figure}
+
+Fig1. Summary of posterior distribution of the cutoff and its predictive
+value (1-NPV and PPV). The vertical red dotted lines denote the median
+of the distribution.
+
+\section{Supplementary}\label{supplementary}
+
+\subsection{Diagnostic results}\label{diagnostic-results}
+
+\subsection{SAS MCMC code}\label{sas-mcmc-code}
+
+\begin{verbatim}
+PROC import datafile="/path/to/data.csv"
+DBMS=csv out=Data replace;
+RUN; 
+
+
+PROC MCMC 
+    data=Data outpost=Dataoutput 
+        nbi=1000000 
+        nmc=1000000
+        thin=10
+        seed=1
+        diag=all
+        monitor=(p1 p2 cp I w); 
+PARMS cp1 cp2 p1 p2 w I; 
+prior cp1 ~ uniform(1,10); 
+prior cp2 ~ normal(5,sd=1); 
+hyperprior I ~ beta(1,1); 
+prior w ~ binary(I); 
+cp = w*cp1 + (1-w)*cp2; 
+prior p2 ~ uniform(0.7, 1);
+prior p1 ~ uniform(0, 0.5);
+p = (AI<=cp)*p1 + (AI>cp)*p2; 
+model Y ~ binary(p);
+RUN;
+\end{verbatim}
+
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\hypertarget{ref-SAS2015}{}
+SAS Institute Inc., 2015. SAS OnDemand for Academics: User's Guide 524.
+
+\hypertarget{ref-Vradi2018}{}
+Vradi, E., Jaki, T., Vonk, R., Brannath, W., 2018. A Bayesian model to
+estimate the cutoff and the clinical utility of a biomarker assay.
+Statistical Methods in Medical Research 1--19.
+doi:\href{https://doi.org/10.1177/0962280218784778}{10.1177/0962280218784778}
+
+
+\end{document}
+
