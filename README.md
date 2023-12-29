@@ -9,7 +9,7 @@ Citation:
 Hoang, T. T. T., Ichinose, K., Morimoto, S., Furukawa, K., Le-Huynh, T.-L., Kawakami, A. (2022). Measurement of anti‑suprabasin antibodies, multiple cytokines and chemokines as potential predictive biomarkers for neuropsychiatric systemic lupus erythematosus. Clinical Immunology, 237(March), 1–8.
 ```
 
-<img align="left" alt="R" width="26px" src="https://github.com/le-huynh/lehuynh.rbind.io/blob/main/static/img/loglo_info.png?raw=true" /> [More info](https://lehuynh.rbind.io/project/proj_npsle/)
+<img align="left" alt="R" width="26px" src="https://github.com/le-huynh/lehuynh.rbind.io/blob/main/static/img/loglo_info.png?raw=true" /> [More info](https://lehuynh.rbind.io/project/proj_npsle/post/)
 
 
 -------------------
